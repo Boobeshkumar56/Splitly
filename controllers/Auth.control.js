@@ -21,7 +21,7 @@ exports.Login=async(req,res)=>{
         if(!user)return res.status(404).json({message:"user not found"})
         const passwordmatch=bcrypt.compare(password, user.password)
         if(!passwordmatch) return res.status(400).json({message:"Invalid password"})
-        const token=jwt.sign({_id:User._id,name:User.name},process.env.JWT_SECRET,{expiresIn:'7d'})
+        const token=jwt.sign({_id:user._id,name:user.name},process.env.JWT_SECRET,{expiresIn:'7d'})
         res.json({token})
     } catch (error) {
         res.status(500).json({message:error.message})

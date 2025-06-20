@@ -1,12 +1,16 @@
 const Group=require('../models/Group.model')
 const User=require('../models/User.model')
+const Balance=require('../models/Balance.model')
+
 exports.Creategroup=async(req,res)=>{
     try {
-        const {groupname,description}=req.body;
+        const {groupname,description,}=req.body;
+
     const group=new Group({groupname,description,members:[
         {
-            user:req.user._id,
+            user:req.user,
             role:'admin'//making the creator as admin
+
         }
 
     ]})
@@ -65,5 +69,22 @@ exports.updateRole = async (req, res) => {
     res.status(200).json({ message: 'Role updated', group });
   } catch (err) {
     res.status(500).json({ message: 'Error updating role', error: err.message });
+  }
+};
+exports.getGroupBalances = async (req, res) => {
+  try {
+    const balances = await Balance.find({ group: req.params.groupId })
+      .populate('from', 'username')
+      .populate('to', 'username');
+
+    const formatted = balances.map(b => ({
+      from: b.from.username,
+      to: b.to.username,
+      amount: b.amount.toFixed(2)
+    }));
+
+    res.status(200).json({ balances: formatted });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch balances', error: error.message });
   }
 };
