@@ -12,6 +12,7 @@ app.use('/api/groups', require('./routes/group.routes'));
 app.use('/api/expenses', require('./routes/Expenses.routes'));
 app.use('/api/balance', require('./routes/group.routes'));
 app.use('/api/settlements', require('./routes/Expenses.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
 
 const PORT=process.env.PORT||5000
 app.listen(PORT,()=>{

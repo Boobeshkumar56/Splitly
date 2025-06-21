@@ -1,5 +1,6 @@
 const Expense = require('../models/Expenses.model');
 const Group = require('../models/Group.model');
+const {sendNotification}=require('../utils/notification.utils')
 const {updateBalancesOnExpense}=require("../utils/balances.utils")
 exports.addExpense = async (req, res) => {
   try {
@@ -96,6 +97,20 @@ exports.addExpense = async (req, res) => {
 
     await expense.save();
     await updateBalancesOnExpense(expense);
+    for (const participant of expense.participants) {
+  const participantId = participant.user.toString();
+  if (participantId !== payer.toString()) {
+    await sendNotification(
+      participantId,
+      `You owe ₹${participant.share} for "${expense.description}"`,
+      'expense'
+    );
+  }}
+  await sendNotification(
+  payer,
+  `Your expense of ₹${expense.amount} has been recorded for "${expense.description}"`,
+  'info'
+);
     res.status(201).json({ message: 'Expense added successfully', expense });
     
 
