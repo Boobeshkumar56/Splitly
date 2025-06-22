@@ -7,5 +7,7 @@ const settlementController = require('../controllers/Settlements.control');
 router.post('/add-expenses', authMiddleware, expenseController.addExpense);
 router.post("/qr-settlement/:groupId",authMiddleware,settlementController.settleViaQR)
 
+
 router.post('/', authMiddleware, settlementController.recordSettlement);
+router.post('/optimal', authMiddleware, settlementController.optimalsettlement);
 module.exports = router;

@@ -8,6 +8,7 @@ router.post('/:groupId/add-member', verifytoken, groupcontroller.addMember);
 router.post('/:groupId/remove-member', verifytoken, groupcontroller.removeMember);
 router.post('/:groupId/update-role', verifytoken, groupcontroller.updateRole);
 router.get('/:groupId/balances', verifytoken, groupcontroller.getGroupBalances);
+router.get('/:groupId/optimalbalance',verifytoken,groupcontroller.getoptimalbalance)
 router.get('/:groupId/summary', verifytoken, groupcontroller.getGroupSummary);
 router.get('/:groupId/Exportpdf', verifytoken, groupcontroller.exportGroupSummaryPDF);
 router.get('/:groupId/invite-qr', qrController.generateInvitationQR);

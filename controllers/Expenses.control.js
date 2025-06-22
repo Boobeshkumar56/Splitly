@@ -1,5 +1,7 @@
 const Expense = require('../models/Expenses.model');
 const Group = require('../models/Group.model');
+const User=require("../models/User.model");
+const {sendEmail}=require('../utils/Email.util')
 const {sendNotification}=require('../utils/notification.utils')
 const {updateBalancesOnExpense}=require("../utils/balances.utils")
 exports.addExpense = async (req, res) => {
@@ -10,10 +12,14 @@ exports.addExpense = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).populate('members.user');
+
     if (!group) return res.status(404).json({ message: 'Group not found' });
 
-    const groupMemberIds = group.members.map((m) => m.user?.toString());
+    const groupMemberIds = group.members.map((m) =>
+  typeof m.user === 'object' ? m.user._id.toString() : m.user?.toString()
+);
+
     const allValid = participants.every((p) => {
       const id = typeof p === 'string' ? p : p.user;
       return groupMemberIds.includes(id);
@@ -97,6 +103,18 @@ exports.addExpense = async (req, res) => {
 
     await expense.save();
     await updateBalancesOnExpense(expense);
+  const payerUser = await User.findById(payer);
+for (const member of group.members) {
+  const user = member.user;
+  console.log(user.email)
+  await sendEmail(
+
+    user.email,
+    `New Expense in ${group.groupname}`,
+    `${payerUser.username} added an expense of ₹${amount} for "${description}" in group "${group.groupname}".`
+  );
+}
+
     for (const participant of expense.participants) {
   const participantId = participant.user.toString();
   if (participantId !== payer.toString()) {

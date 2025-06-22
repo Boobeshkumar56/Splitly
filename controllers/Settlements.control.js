@@ -2,6 +2,9 @@ const Settlement = require('../models/Settlements.model');
 const Group = require('../models/Group.model');
 const {updateBalanceOnSettlement}=require('../utils/balances.utils')
 const {sendNotification}=require('../utils/notification.utils')
+const {performOptimalSettlement}=require('../utils/optimizedbalance.utils')
+const User=require('../models/User.model')
+const {sendEmail}=require('../utils/Email.util')
 exports.recordSettlement = async (req, res) => {
   try {
     const { group, from, to, amount, note } = req.body;
@@ -23,6 +26,8 @@ exports.recordSettlement = async (req, res) => {
 
     await newSettlement.save();
 
+notifysettlement(from,to,group)
+
     res.status(201).json({ message: 'Settlement recorded', settlement: newSettlement });
   } catch (err) {
     res.status(500).json({ message: 'Error recording settlement', error: err.message });
@@ -42,9 +47,32 @@ exports.settleViaQR = async (req, res) => {
     await newSettlement.save();
 
     await updateBalanceOnSettlement(group, from, to, amount);
+    notifysettlement(from,to,group)
 
     res.status(201).json({ message: 'Payment settled via QR', settlement: newSettlement });
   } catch (error) {
     res.status(500).json({ message: 'Error settling payment', error: error.message });
   }
 };
+exports.optimalsettlement= async (req,res)=>{
+  const { groupId, sender, receiver, amount } = req.body;
+  try {
+    const result = await performOptimalSettlement(groupId, sender, receiver, parseFloat(amount));
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to perform optimal settlement', error: err.message });
+  }
+
+}
+const notifysettlement=async(from,to,group)=>{
+  const fromname=await User.findById(from).username;
+const toname=await User.findById(to).username;
+for (const member of group.members) {
+  await sendEmail(
+    member.user.email,
+    `Settlement in ${group.groupname}`,
+    `${fromname} settled ₹${amount} with ${toname} via optimal settlement in group "${group.groupname}".`
+  );
+}
+
+}

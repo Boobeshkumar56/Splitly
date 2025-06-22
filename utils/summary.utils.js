@@ -41,10 +41,11 @@ console.log(group.groupname)
   const topSpenderUser = await User.findById(topSpenderId);
 
   const allUserIds = Array.from(new Set([...Object.keys(contributions), ...Object.keys(owedMap)]));
-  const users = await User.find({ _id: { $in: allUserIds } });
+  const users = await User.find({ _id: { $in: allUserIds } }).lean();
+  console.log(users)
 
   const userContributions = users.map(user => ({
-    user: user.username,
+    user: user?.username || user?.email,
     amountPaid: contributions[user._id.toString()] || 0,
     amountOwed: owedMap[user._id.toString()] || 0
   }));
